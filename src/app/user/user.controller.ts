@@ -9,8 +9,9 @@ import {
 import { UserService } from './user.service';
 import { User } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
-import { CacheTTL } from '@nestjs/cache-manager';
+
 import { CustomCacheInterceptor } from 'src/interceptors/cache.interceptor';
+import { CacheTTL } from 'src/decorators/cache-ttl.decorator';
 
 @Controller('user')
 @UseInterceptors(CustomCacheInterceptor)
@@ -18,7 +19,7 @@ import { CustomCacheInterceptor } from 'src/interceptors/cache.interceptor';
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get(':id')
-  @CacheTTL(10)
+  @CacheTTL(10000)
   async getUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
     const findUser = await this.userService.getUser(id);
     if (!findUser) {
