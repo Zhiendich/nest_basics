@@ -1,9 +1,8 @@
-import { InjectRedis } from '@nestjs-modules/ioredis';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import Redis from 'ioredis';
 import { Request } from 'express';
+import { CacheService } from 'src/services/cache.service';
 
 @Injectable()
 export class RefreshJwtGuard
@@ -12,7 +11,7 @@ export class RefreshJwtGuard
 {
   constructor(
     private readonly reflector: Reflector,
-    @InjectRedis() private readonly redis: Redis,
+    private readonly redis: CacheService,
   ) {
     super();
   }

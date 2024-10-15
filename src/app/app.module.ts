@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from 'src/modules/user/user.module';
-import { AuthModule } from 'src/modules/auth/auth.module';
+import { UserModule } from 'src/app/user/user.module';
+import { AuthModule } from 'src/app/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { RedisModule } from '@nestjs-modules/ioredis';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AccessJwtGuard } from 'src/guards/access-jwt.guard';
 import { RefreshJwtGuard } from 'src/guards/refresh-jwt.guard';
+import { CacheModule } from '../modules/cache.module';
+
 @Module({
   imports: [
     UserModule,
@@ -15,11 +16,7 @@ import { RefreshJwtGuard } from 'src/guards/refresh-jwt.guard';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    RedisModule.forRoot({
-      options: {},
-      type: 'single',
-      url: 'redis://localhost:6379',
-    }),
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [

@@ -16,8 +16,10 @@ import { RegisterUserDto } from './dto/register.dto';
 import { Request, Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
 import { JwtPayload } from 'src/types/jwt.types';
+import { ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -40,6 +42,10 @@ export class AuthController {
   }
   @Post('register')
   @Public()
+  @ApiResponse({
+    status: 201,
+    type: OmitType(RegisterUserDto, ['password']),
+  })
   async register(@Body() dto: RegisterUserDto) {
     const user = await this.authService.register(dto);
     if (!user) {

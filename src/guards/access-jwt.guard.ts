@@ -1,15 +1,14 @@
-import { InjectRedis } from '@nestjs-modules/ioredis';
 import { ExecutionContext, Injectable, CanActivate } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import Redis from 'ioredis';
+import { CacheService } from 'src/services/cache.service';
 
 @Injectable()
 export class AccessJwtGuard extends AuthGuard('jwt') implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @InjectRedis() private readonly redis: Redis,
+    private readonly redis: CacheService,
   ) {
     super();
   }
