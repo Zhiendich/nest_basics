@@ -8,6 +8,8 @@ import { User } from '@prisma/client';
 import { RegisterUserDto } from './dto/register.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/types/jwt.types';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import Redis from 'ioredis';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +17,7 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private config: ConfigService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
   async login(dto: LoginUserDto): Promise<{
     user: Omit<User, 'password'>;
@@ -87,5 +90,14 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+  async addTokensToBlacklist(
+    access: { accessTokenExp: number; accessToken: string },
+    refresh: { refreshTokenExp: number; refreshToken: string },
+  ) {
+    const { accessToken, accessTokenExp } = access;
+    const { refreshToken, refreshTokenExp } = refresh;
+    await this.redis.set(accessToken, 'blacklisted', 'PX', accessTokenExp);
+    await this.redis.set(refreshToken, 'blacklisted', 'PX', refreshTokenExp);
   }
 }

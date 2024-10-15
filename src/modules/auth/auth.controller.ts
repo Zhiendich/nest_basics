@@ -2,9 +2,10 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   NotFoundException,
   Post,
-  Request,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,7 +13,7 @@ import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login.dto';
 import { LocalAuthGuard } from 'src/guards/auth.guard';
 import { RegisterUserDto } from './dto/register.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
 import { JwtPayload } from 'src/types/jwt.types';
 
@@ -47,24 +48,50 @@ export class AuthController {
     return user;
   }
   @Post('refresh')
-  async refresh(@Request() req: { user: JwtPayload }, @Res() res: Response) {
-    const { id, email } = req.user;
-    const { accessToken, refreshToken } = await this.authService.refresh(
-      id,
-      email,
+  async refresh(
+    @Req()
+    req: Request & {
+      accessTokenInfo: JwtPayload;
+      refreshTokenInfo: JwtPayload;
+    },
+    @Res() res: Response,
+    @Headers('Authorization') authorizationHeader,
+  ) {
+    const { id, email } = req.accessTokenInfo;
+    const accessToken = authorizationHeader.split(' ')[1];
+    const refreshToken = req.cookies.refreshToken;
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await this.authService.refresh(id, email);
+    this.authService.addTokensToBlacklist(
+      { accessToken, accessTokenExp: req.accessTokenInfo.exp },
+      { refreshToken, refreshTokenExp: req.refreshTokenInfo.exp },
     );
-
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', newRefreshToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
-    return res.status(200).json({ accessToken });
+    return res.status(200).json({ accessToken: newAccessToken });
   }
   @Get('logout')
-  async logout(@Res() res: Response) {
+  async logout(
+    @Req()
+    req: Request & {
+      accessTokenInfo: JwtPayload;
+      refreshTokenInfo: JwtPayload;
+    },
+    @Res() res: Response,
+    @Headers('Authorization') authorizationHeader,
+  ) {
     res.clearCookie('refreshToken', {
       httpOnly: true,
     });
+    const accessToken = authorizationHeader.split(' ')[1];
+    const refreshToken = req.cookies.refreshToken;
+    this.authService.addTokensToBlacklist(
+      { accessToken, accessTokenExp: req.accessTokenInfo.exp },
+      { refreshToken, refreshTokenExp: req.refreshTokenInfo.exp },
+    );
+
     return res.status(200).json({ message: 'Successfully logged out' });
   }
 }
