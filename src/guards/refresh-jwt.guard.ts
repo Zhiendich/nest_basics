@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
@@ -11,7 +17,8 @@ export class RefreshJwtGuard
 {
   constructor(
     private readonly reflector: Reflector,
-    private readonly redis: CacheService,
+    // private readonly redis: CacheService,
+    @Inject(CACHE_MANAGER) private redis: CacheService,
   ) {
     super();
   }

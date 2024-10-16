@@ -7,6 +7,10 @@ import { CacheService } from 'src/services/cache.service';
 @Module({
   imports: [],
   controllers: [UserController],
-  providers: [UserService, PrismaService, CacheService],
+  providers: [
+    UserService,
+    PrismaService,
+    //  CacheService
+  ],
 })
 export class UserModule {}

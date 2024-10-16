@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/services/prisma.service';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +9,7 @@ import { RegisterUserDto } from './dto/register.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/types/jwt.types';
 import { CacheService } from 'src/services/cache.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,8 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private config: ConfigService,
-    private readonly redis: CacheService,
+    // private readonly redis: CacheService,
+    @Inject(CACHE_MANAGER) private redis: CacheService,
   ) {}
   async login(dto: LoginUserDto): Promise<{
     user: Omit<User, 'password'>;
