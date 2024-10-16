@@ -14,7 +14,6 @@ import { CacheService } from 'src/services/cache.service';
 export class AccessJwtGuard extends AuthGuard('jwt') implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    // private readonly redis: CacheService,
     @Inject(CACHE_MANAGER) private redis: CacheService,
   ) {
     super();

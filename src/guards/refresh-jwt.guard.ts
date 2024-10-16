@@ -17,7 +17,6 @@ export class RefreshJwtGuard
 {
   constructor(
     private readonly reflector: Reflector,
-    // private readonly redis: CacheService,
     @Inject(CACHE_MANAGER) private redis: CacheService,
   ) {
     super();

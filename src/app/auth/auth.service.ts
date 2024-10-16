@@ -17,7 +17,6 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private config: ConfigService,
-    // private readonly redis: CacheService,
     @Inject(CACHE_MANAGER) private redis: CacheService,
   ) {}
   async login(dto: LoginUserDto): Promise<{
