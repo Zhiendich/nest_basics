@@ -23,19 +23,25 @@ export class CustomCacheInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const key = request.url;
+    const body = request.body;
 
     const ttl =
       this.reflector.get<number>(CACHE_TTL_KEY, context.getHandler()) ||
       10 * 1000;
+    const stringBody = JSON.stringify(body);
 
-    const cachedResponse = await this.cacheService.get(key);
+    const cachedResponse = await this.cacheService.get(key + stringBody);
     if (cachedResponse) {
       return of(JSON.parse(cachedResponse));
     }
 
     return next.handle().pipe(
       tap(async (response) => {
-        await this.cacheService.set(key, JSON.stringify(response), ttl);
+        await this.cacheService.set(
+          key + stringBody,
+          JSON.stringify(response),
+          ttl,
+        );
       }),
     );
   }
