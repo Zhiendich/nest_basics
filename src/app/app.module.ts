@@ -4,10 +4,11 @@ import { AppService } from './app.service';
 import { UserModule } from 'src/app/user/user.module';
 import { AuthModule } from 'src/app/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { AccessJwtGuard } from 'src/guards/access-jwt.guard';
 import { RefreshJwtGuard } from 'src/guards/refresh-jwt.guard';
 import { CacheModule } from '../modules/cache.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CacheModule } from '../modules/cache.module';
       isGlobal: true,
     }),
     CacheModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [
