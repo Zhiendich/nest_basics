@@ -4,7 +4,9 @@ import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
-import { instance } from './log/winston.logger';
+import { instance } from './logs/winston.logger';
+import helmet from 'helmet';
+import * as compression from 'compression';
 
 const setUpSwagger = (app: INestApplication<any>) => {
   const config = new DocumentBuilder()
@@ -24,6 +26,8 @@ async function bootstrap() {
     }),
   });
   app.setGlobalPrefix('api');
+  app.use(helmet());
+  app.use(compression());
   app.enableCors({ origin: [process.env.FRONTEND_URL], credentials: true });
   app.use(cookieParser());
   setUpSwagger(app);

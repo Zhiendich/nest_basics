@@ -1,4 +1,7 @@
+import * as path from 'path';
 import { createLogger, format, transports } from 'winston';
+
+const logsDirectory = path.join(__dirname, 'logs');
 
 // custom log display format
 const customFormat = format.printf(({ timestamp, level, stack, message }) => {
@@ -7,7 +10,7 @@ const customFormat = format.printf(({ timestamp, level, stack, message }) => {
 
 const options = {
   file: {
-    filename: 'error.log',
+    filename: path.join(logsDirectory, 'error.log'),
     level: 'error',
   },
   console: {
@@ -35,7 +38,7 @@ const prodLogger = {
   transports: [
     new transports.File(options.file),
     new transports.File({
-      filename: 'combine.log',
+      filename: path.join(logsDirectory, 'combine.log'),
       level: 'info',
     }),
   ],

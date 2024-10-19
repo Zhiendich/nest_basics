@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from 'src/app/user/user.module';
@@ -12,6 +12,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WinstonModule } from 'nest-winston';
 import { RolesGuard } from 'src/guards/role.guard';
 import { ParseIdPipe } from 'src/pipes/parseId.pipe';
+import { LoggerMiddleware } from 'src/middleware/logger.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -23,6 +26,13 @@ import { ParseIdPipe } from 'src/pipes/parseId.pipe';
     CacheModule,
     EventEmitterModule.forRoot(),
     WinstonModule.forRoot({}),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
+    FileModule,
   ],
   controllers: [AppController],
   providers: [
@@ -44,6 +54,14 @@ import { ParseIdPipe } from 'src/pipes/parseId.pipe';
       provide: APP_PIPE,
       useClass: ParseIdPipe,
     },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

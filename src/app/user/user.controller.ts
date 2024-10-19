@@ -23,7 +23,7 @@ export class UserController {
   @UseInterceptors(CustomCacheInterceptor)
   @Get(':id')
   @CacheTTL(10000)
-  async getUser(@Param('id', ParseIntPipe) id: number): Promise<User> {
+  async getUser(@Param('id') id: number): Promise<User> {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     const findUser = await this.userService.getUser(id);
     if (!findUser) {

@@ -8,7 +8,6 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { CacheService } from 'src/services/cache.service';
 import { Reflector } from '@nestjs/core';
-import { CACHE_TTL_KEY } from 'src/decorators/cache-ttl.decorator';
 
 @Injectable()
 export class CustomCacheInterceptor implements NestInterceptor {
@@ -27,8 +26,7 @@ export class CustomCacheInterceptor implements NestInterceptor {
     const { id } = request.params;
 
     const ttl =
-      this.reflector.get<number>(CACHE_TTL_KEY, context.getHandler()) ||
-      10 * 1000;
+      this.reflector.get<number>('cacheTTL', context.getHandler()) || 10 * 1000;
     const stringBody = JSON.stringify(body);
 
     const cachedResponse = await this.cacheService.get(id + key + stringBody);

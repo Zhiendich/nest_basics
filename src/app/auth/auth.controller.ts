@@ -19,6 +19,8 @@ import { Public } from 'src/decorators/public.decorator';
 import { JwtPayload } from 'src/types/jwt.types';
 import { ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
 import { Logger } from 'winston';
+import { GetJwtPayload } from 'src/decorators/get-jwt-payload.decorator';
+import { AuthDataTransfer } from 'src/types/auth.types';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -33,6 +35,7 @@ export class AuthController {
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
     // this.logger.error('CALLED');
+
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);
     if (!user) {
@@ -61,22 +64,17 @@ export class AuthController {
   }
   @Post('refresh')
   async refresh(
-    @Req()
-    req: Request & {
-      accessTokenInfo: JwtPayload;
-      refreshTokenInfo: JwtPayload;
-    },
     @Res() res: Response,
-    @Headers('Authorization') authorizationHeader,
+    @GetJwtPayload() jwtPayload: AuthDataTransfer,
   ) {
-    const { id, email } = req.accessTokenInfo;
-    const accessToken = authorizationHeader.split(' ')[1];
-    const refreshToken = req.cookies.refreshToken;
+    const { accessToken, refreshToken, accessTokenInfo, refreshTokenInfo } =
+      jwtPayload;
+    const { id, email } = accessTokenInfo;
     const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
       await this.authService.refresh(id, email);
     this.authService.addTokensToBlacklist(
-      { accessToken, accessTokenExp: req.accessTokenInfo.exp },
-      { refreshToken, refreshTokenExp: req.refreshTokenInfo.exp },
+      { accessToken, accessTokenExp: accessTokenInfo.exp },
+      { refreshToken, refreshTokenExp: refreshTokenInfo.exp },
     );
     res.cookie('refreshToken', newRefreshToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -86,22 +84,17 @@ export class AuthController {
   }
   @Get('logout')
   async logout(
-    @Req()
-    req: Request & {
-      accessTokenInfo: JwtPayload;
-      refreshTokenInfo: JwtPayload;
-    },
     @Res() res: Response,
-    @Headers('Authorization') authorizationHeader,
+    @GetJwtPayload() jwtPayload: AuthDataTransfer,
   ) {
     res.clearCookie('refreshToken', {
       httpOnly: true,
     });
-    const accessToken = authorizationHeader.split(' ')[1];
-    const refreshToken = req.cookies.refreshToken;
+    const { accessToken, accessTokenInfo, refreshToken, refreshTokenInfo } =
+      jwtPayload;
     this.authService.addTokensToBlacklist(
-      { accessToken, accessTokenExp: req.accessTokenInfo.exp },
-      { refreshToken, refreshTokenExp: req.refreshTokenInfo.exp },
+      { accessToken, accessTokenExp: accessTokenInfo.exp },
+      { refreshToken, refreshTokenExp: refreshTokenInfo.exp },
     );
 
     return res.status(200).json({ message: 'Successfully logged out' });
