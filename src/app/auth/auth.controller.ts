@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Inject,
   NotFoundException,
   Post,
   Req,
@@ -17,16 +18,21 @@ import { Request, Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
 import { JwtPayload } from 'src/types/jwt.types';
 import { ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
+import { Logger } from 'winston';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    // private readonly logger: Logger,
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
+    // this.logger.error('CALLED');
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);
     if (!user) {

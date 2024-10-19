@@ -16,10 +16,13 @@ export class UserService {
   }): Promise<User | null> {
     return this.prismaService.user.findFirst({ where });
   }
-  async create(newUser: Omit<User, 'id'>): Promise<User | null> {
+  async create(newUser: Omit<User, 'id' | 'roles'>): Promise<User | null> {
     return this.prismaService.user.create({ data: newUser });
   }
-  async update(data: Omit<User, 'id'>, id: number): Promise<User | null> {
+  async update(
+    data: Omit<User, 'id' | 'roles'>,
+    id: number,
+  ): Promise<User | null> {
     const updatedUser = this.prismaService.user.update({ where: { id }, data });
     if (updatedUser) {
       this.eventEmitter.emit('user.updated', { id });

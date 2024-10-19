@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { PrismaService } from 'src/services/prisma.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -25,6 +25,7 @@ import { RefreshJwtStrategy } from 'src/strategies/refresh-jwt.strategy';
   providers: [
     AuthService,
     PrismaService,
+    // Logger,
     UserService,
     LocalStrategy,
     AccessJwtStrategy,

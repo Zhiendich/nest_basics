@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Roles } from '@prisma/client';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class UpdateUserDto {
@@ -25,4 +26,11 @@ export class UpdateUserDto {
     required: true,
   })
   name!: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    example: 'USER',
+  })
+  roles: Roles[];
 }

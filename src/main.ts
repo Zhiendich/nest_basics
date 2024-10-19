@@ -3,6 +3,8 @@ import { AppModule } from './app/app.module';
 import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
+import { WinstonModule } from 'nest-winston';
+import { instance } from './log/winston.logger';
 
 const setUpSwagger = (app: INestApplication<any>) => {
   const config = new DocumentBuilder()
@@ -16,7 +18,11 @@ const setUpSwagger = (app: INestApplication<any>) => {
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger({
+      instance: instance,
+    }),
+  });
   app.setGlobalPrefix('api');
   app.enableCors({ origin: [process.env.FRONTEND_URL], credentials: true });
   app.use(cookieParser());

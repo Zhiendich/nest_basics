@@ -9,11 +9,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from '@prisma/client';
+import { Roles, User } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
 import { CustomCacheInterceptor } from 'src/interceptors/cache.interceptor';
 import { CacheTTL } from 'src/decorators/cache-ttl.decorator';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { CheckRoles } from 'src/decorators/role.decorator';
 
 @Controller('user')
 @ApiTags('User')
@@ -30,6 +31,7 @@ export class UserController {
     }
     return findUser;
   }
+  @CheckRoles(Roles.admin)
   @Put(':id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,

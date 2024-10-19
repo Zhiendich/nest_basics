@@ -45,8 +45,8 @@ export class AuthService {
     password: string,
   ): Promise<Omit<User, 'password'> | null> {
     const user = await this.usersService.findOne({ email });
-    const isEqual = password === user.password;
-    // const isEqual = await bcrypt.compare(password, user.password);
+    // const isEqual = password === user.password;
+    const isEqual = await bcrypt.compare(password, user.password);
     if (user && isEqual) {
       const { password, ...result } = user;
       return result;
@@ -58,7 +58,12 @@ export class AuthService {
     if (findUser) {
       throw new ConflictException();
     }
-    const user = await this.usersService.create(dto);
+    const hashPassword = bcrypt.hashSync(dto.password, 6);
+    const { password: inputPassword, ...rest } = dto;
+    const user = await this.usersService.create({
+      ...rest,
+      password: hashPassword,
+    });
     if (user) {
       const { password, ...result } = user;
       return result;
