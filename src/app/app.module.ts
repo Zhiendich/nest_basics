@@ -15,6 +15,7 @@ import { ParseIdPipe } from 'src/pipes/parseId.pipe';
 import { LoggerMiddleware } from 'src/middleware/logger.middleware';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { FileModule } from './file/file.module';
+import { WhetherModule } from './whether/whether.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FileModule } from './file/file.module';
       },
     ]),
     FileModule,
+    WhetherModule,
   ],
   controllers: [AppController],
   providers: [
