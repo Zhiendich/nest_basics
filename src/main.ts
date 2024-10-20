@@ -25,6 +25,7 @@ async function bootstrap() {
       instance: instance,
     }),
   });
+
   app.setGlobalPrefix('api');
   app.use(helmet());
   app.use(compression());

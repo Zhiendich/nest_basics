@@ -1,14 +1,13 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/services/prisma.service';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { RegisterUserDto } from './dto/register.dto';
-import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from 'src/types/jwt.types';
 import { CacheService } from 'src/services/cache.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -45,7 +44,6 @@ export class AuthService {
     password: string,
   ): Promise<Omit<User, 'password'> | null> {
     const user = await this.usersService.findOne({ email });
-    // const isEqual = password === user.password;
     const isEqual = await bcrypt.compare(password, user.password);
     if (user && isEqual) {
       const { password, ...result } = user;

@@ -2,13 +2,11 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
-  Inject,
   NotFoundException,
   Post,
-  Req,
   Res,
   UseGuards,
+  Logger,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login.dto';
@@ -17,7 +15,6 @@ import { RegisterUserDto } from './dto/register.dto';
 import { Response } from 'express';
 import { Public } from 'src/decorators/public.decorator';
 import { ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
-import { Logger } from 'winston';
 import { GetJwtPayload } from 'src/decorators/get-jwt-payload.decorator';
 import { AuthDataTransfer } from 'src/types/auth.types';
 
@@ -26,14 +23,15 @@ import { AuthDataTransfer } from 'src/types/auth.types';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    // private readonly logger: Logger,
+    private readonly logger: Logger,
   ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
-    // this.logger.error('CALLED');
+    //@ts-ignore
+    this.logger.error({ message: 'CALLED' });
 
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);

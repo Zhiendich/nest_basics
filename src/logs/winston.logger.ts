@@ -1,11 +1,14 @@
 import * as path from 'path';
 import { createLogger, format, transports } from 'winston';
 
-const logsDirectory = path.join(__dirname, 'logs');
+const logsDirectory =
+  process.env.NODE_ENV === 'production'
+    ? path.join(__dirname, '../logs')
+    : path.join(process.cwd(), 'src/logs');
 
 // custom log display format
 const customFormat = format.printf(({ timestamp, level, stack, message }) => {
-  return `${timestamp} - [${level.toUpperCase().padEnd(7)}] - ${stack || message}`;
+  return `${timestamp} - [${level.toUpperCase().padEnd(7)}] - ${message} - ${stack}`;
 });
 
 const options = {
@@ -25,7 +28,13 @@ const devLogger = {
     format.errors({ stack: true }),
     customFormat,
   ),
-  transports: [new transports.Console(options.console)],
+  transports: [
+    new transports.File(options.file),
+    new transports.File({
+      filename: path.join(logsDirectory, 'combine.log'),
+      level: 'info',
+    }),
+  ],
 };
 
 // for production environment

@@ -25,7 +25,7 @@ import { RefreshJwtStrategy } from 'src/strategies/refresh-jwt.strategy';
   providers: [
     AuthService,
     PrismaService,
-    // Logger,
+    Logger,
     UserService,
     LocalStrategy,
     AccessJwtStrategy,
