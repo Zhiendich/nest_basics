@@ -20,8 +20,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: install modules
         run: yarn install
-      - name: prettier check
-        run: yarn prettier
+      - name: linter check
+        run: yarn lint
       - name: typecheck
         run: yarn typecheck
       - name: runnig unit tests
