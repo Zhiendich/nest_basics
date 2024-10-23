@@ -12,7 +12,7 @@ import { AppModule } from 'src/app/app.module';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
-  let authService = {
+  const authService = {
     login: jest.fn().mockReturnValueOnce({
       user: {
         id: 3,
@@ -41,9 +41,9 @@ describe('AppController (e2e)', () => {
       refreshToken: 'refreshToken',
     }),
   };
-  let userService = { findOne: jest.fn() };
-  let prismaService = { findOne: jest.fn() };
-  let jwtService = { sign: jest.fn(), verify: jest.fn() };
+  const userService = { findOne: jest.fn() };
+  const prismaService = { findOne: jest.fn() };
+  const jwtService = { sign: jest.fn(), verify: jest.fn() };
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
