@@ -30,15 +30,13 @@ export class AuthController {
   @Post('login')
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
-    //@ts-ignore
-    this.logger.error({ message: 'CALLED' });
-
+    console.log('dto', dto);
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);
     if (!user) {
+      this.logger.error({ message: 'User was not found' });
       throw new NotFoundException();
     }
-
     res.cookie('refreshToken', refreshToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,

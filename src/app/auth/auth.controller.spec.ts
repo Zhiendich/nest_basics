@@ -5,9 +5,13 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from 'src/services/cache.service';
-import { Roles } from '@prisma/client';
+import { Roles, User } from '@prisma/client';
 import { Response } from 'express';
 import { PrismaService } from 'src/services/prisma.service';
+import { Logger } from '@nestjs/common';
+import { RegisterUserDto } from './dto/register.dto';
+import { LoginUserDto } from './dto/login.dto';
+import { AuthDataTransfer } from 'src/types/auth.types';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -21,6 +25,9 @@ describe('AuthController', () => {
           provide: AuthService,
           useValue: {
             login: jest.fn(),
+            register: jest.fn(),
+            refresh: jest.fn(),
+            addTokensToBlacklist: jest.fn(),
           },
         },
         {
@@ -40,10 +47,19 @@ describe('AuthController', () => {
           useValue: {},
         },
         {
-          provide: PrismaService,
+          provide: Logger,
+          useValue: {
+            error: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService.toString(),
           useValue: {
             $connect: jest.fn(),
             $disconnect: jest.fn(),
+            user: {
+              findFirst: jest.fn(),
+            },
           },
         },
       ],
@@ -56,11 +72,11 @@ describe('AuthController', () => {
   it('should be defined', () => {
     expect(authController).toBeDefined();
   });
-  const request = {
+  const loginRequest: LoginUserDto = {
     email: 'alice@prisma.io',
     password: 'alicepassword',
   };
-  const result = {
+  const loginResult = {
     user: {
       id: 3,
       email: 'alice@prisma.io',
@@ -72,14 +88,140 @@ describe('AuthController', () => {
     refreshToken: 'sdadsadsadasdas',
   };
 
+  const mockLoginResponse = {
+    json: jest.fn().mockReturnValue(loginResult),
+    cookie: jest.fn(),
+  } as unknown as Response;
+
   describe('login', () => {
     it('user try to login', async () => {
-      jest.spyOn(authService, 'login').mockResolvedValue(result);
-      const mockResponse = {
-        json: jest.fn().mockReturnValue(result),
-      } as unknown as Response;
-      await authController.login(request, mockResponse);
-      expect(mockResponse.json).toHaveBeenCalledWith(result);
+      jest.spyOn(authService, 'login').mockResolvedValue(loginResult);
+      const result = await authController.login(
+        loginRequest,
+        mockLoginResponse,
+      );
+      expect(result).toEqual(loginResult);
+      expect(mockLoginResponse.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        loginResult.refreshToken,
+        {
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          httpOnly: true,
+        },
+      );
+      const resultWithoutRefreshToken = { ...loginResult };
+      delete resultWithoutRefreshToken.refreshToken;
+      expect(mockLoginResponse.json).toHaveBeenCalledWith(
+        resultWithoutRefreshToken,
+      );
+    });
+  });
+
+  ////////////////////////////////
+
+  const registrationRequest: RegisterUserDto = {
+    email: 'alice@prisma.io',
+    password: 'alicepassword',
+    name: 'alice',
+  };
+
+  const regisrationResult: User = {
+    email: 'alice@prisma.io',
+    roles: [Roles.user],
+    id: 1,
+    name: 'alice',
+    password: 'alicepassword',
+  };
+
+  describe('registration', () => {
+    it('user try to register', async () => {
+      jest.spyOn(authService, 'register').mockResolvedValue(regisrationResult);
+      const result = await authController.register(registrationRequest);
+      expect(result).toEqual(regisrationResult);
+      expect(authService.register).toHaveBeenCalledWith(registrationRequest);
+    });
+  });
+
+  ////////////////////////////////
+
+  const refreshRequest: AuthDataTransfer = {
+    accessToken: 'test',
+    refreshToken: 'test',
+    user: { email: 'test@gmail.com', id: 1 },
+    accessTokenInfo: { email: 'test@gmail.com', id: 1, exp: 100000012 },
+    refreshTokenInfo: { email: 'test@gmail.com', id: 1, exp: 100000012 },
+  };
+
+  const refreshResult = {
+    accessToken: 'sadasdsadsa',
+    refreshToken: 'sadasdsadsa',
+  };
+
+  const mockRefreshResponse = {
+    json: jest.fn().mockReturnValue(refreshResult),
+    cookie: jest.fn(),
+    status: jest.fn().mockImplementation(function () {
+      return this;
+    }),
+  } as unknown as Response;
+
+  describe('refresh', () => {
+    it('user try to refresh token', async () => {
+      jest.spyOn(authService, 'addTokensToBlacklist').mockResolvedValue(null);
+      jest.spyOn(authService, 'refresh').mockResolvedValue(refreshResult);
+      const result = await authController.refresh(
+        mockRefreshResponse,
+        refreshRequest,
+      );
+      expect(result).toEqual(refreshResult);
+      expect(mockRefreshResponse.cookie).toHaveBeenCalledWith(
+        'refreshToken',
+        refreshResult.refreshToken,
+        {
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          httpOnly: true,
+        },
+      );
+      expect(mockRefreshResponse.status).toHaveBeenCalledWith(200);
+      expect(mockRefreshResponse.json).toHaveBeenCalledWith({
+        accessToken: refreshResult.accessToken,
+      });
+    });
+  });
+
+  ////////////////////////////////
+
+  const logoutRequest: AuthDataTransfer = {
+    accessToken: 'test',
+    refreshToken: 'test',
+    user: { email: 'test@gmail.com', id: 1 },
+    accessTokenInfo: { email: 'test@gmail.com', id: 1, exp: 100000012 },
+    refreshTokenInfo: { email: 'test@gmail.com', id: 1, exp: 100000012 },
+  };
+
+  const mockLogoutResponse = {
+    json: jest.fn().mockReturnValue({ message: 'Successfully logged out' }),
+    clearCookie: jest.fn(),
+    status: jest.fn().mockImplementation(function () {
+      return this;
+    }),
+  } as unknown as Response;
+
+  describe('logout', () => {
+    it('user try to logout', async () => {
+      jest.spyOn(authService, 'addTokensToBlacklist').mockResolvedValue(null);
+      const result = await authController.logout(
+        mockLogoutResponse,
+        logoutRequest,
+      );
+      expect(result).toEqual({ message: 'Successfully logged out' });
+      expect(mockLogoutResponse.clearCookie).toHaveBeenCalledWith(
+        'refreshToken',
+        {
+          httpOnly: true,
+        },
+      );
+      expect(mockLogoutResponse.status).toHaveBeenCalledWith(200);
     });
   });
 });

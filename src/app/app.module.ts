@@ -1,6 +1,4 @@
 import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { UserModule } from 'src/app/user/user.module';
 import { AuthModule } from 'src/app/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
@@ -36,9 +34,8 @@ import { WhetherModule } from './whether/whether.module';
     FileModule,
     WhetherModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     Logger,
     {
       provide: APP_GUARD,
