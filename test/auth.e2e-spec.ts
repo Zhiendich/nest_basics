@@ -79,19 +79,19 @@ describe('AppController (e2e)', () => {
 
   ////////////////////
 
-  it('Login user incorectly', () => {
+  it('Login user incorectly', async () => {
     authService.login.mockRejectedValueOnce({
       statusCode: 401,
       message: 'Unauthorized',
     });
 
-    return request(app.getHttpServer())
+    return await request(app.getHttpServer())
       .post('/auth/login')
       .expect(401)
       .expect({ message: 'Unauthorized', statusCode: 401 });
   });
 
-  it('Login user corectly', () => {
+  it('Login user corectly', async () => {
     authService.login.mockResolvedValueOnce({
       user: {
         id: 3,
@@ -102,7 +102,7 @@ describe('AppController (e2e)', () => {
       accessToken: 'accessToken',
     });
 
-    return request(app.getHttpServer())
+    return await request(app.getHttpServer())
       .post('/auth/login')
       .send({
         email: 'alice@prisma.io',
@@ -122,7 +122,7 @@ describe('AppController (e2e)', () => {
 
   ////////////////////
 
-  it('Register user', () => {
+  it('Register user', async () => {
     authService.register.mockRejectedValueOnce({
       user: {
         id: 3,
@@ -134,7 +134,7 @@ describe('AppController (e2e)', () => {
       accessToken: 'accessToken',
     });
 
-    return request(app.getHttpServer())
+    return await request(app.getHttpServer())
       .post('/auth/register')
       .expect(201)
       .expect({
@@ -147,11 +147,5 @@ describe('AppController (e2e)', () => {
         accessToken: 'accessToken',
         refreshToken: 'refreshToken',
       });
-  });
-
-  afterEach(async () => {
-    if (app) {
-      await app.close();
-    }
   });
 });

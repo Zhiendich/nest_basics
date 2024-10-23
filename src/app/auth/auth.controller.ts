@@ -30,7 +30,6 @@ export class AuthController {
   @Post('login')
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
-    console.log('dto', dto);
     const { user, accessToken, refreshToken } =
       await this.authService.login(dto);
     if (!user) {
