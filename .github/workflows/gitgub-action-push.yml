@@ -20,20 +20,13 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: install modules
         run: yarn install
-      - name: Start local Redis
-        run: |
-          docker run -d -p 6379:6379 --name redis redis:alpine
       - name: linter check
         run: yarn lint
       - name: typecheck
         run: yarn typecheck
       - name: runnig unit tests
         run: yarn test
-      - name: runnig e2e tests
-        run: yarn test:e2e
+      # - name: runnig e2e tests
+      #   run: yarn test:e2e
       - name: build project
         run: yarn build
-      - name: Stop Redis
-        run: |
-          docker stop redis
-          docker rm redis

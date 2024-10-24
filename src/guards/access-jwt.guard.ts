@@ -14,10 +14,7 @@ export class AccessJwtGuard extends AuthGuard('jwt') implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.get<boolean>(
-      'isPublic',
-      context.getHandler(),
-    );
+    const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
 
     if (isPublic) {
       return true;

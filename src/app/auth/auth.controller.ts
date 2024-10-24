@@ -30,8 +30,7 @@ export class AuthController {
   @Post('login')
   @Public()
   async login(@Body() dto: LoginUserDto, @Res() res: Response) {
-    const { user, accessToken, refreshToken } =
-      await this.authService.login(dto);
+    const { user, accessToken, refreshToken } = await this.authService.login(dto);
     if (!user) {
       this.logger.error({ message: 'User was not found' });
       throw new NotFoundException();
@@ -57,12 +56,8 @@ export class AuthController {
     return user;
   }
   @Post('refresh')
-  async refresh(
-    @Res() res: Response,
-    @GetJwtPayload() jwtPayload: AuthDataTransfer,
-  ) {
-    const { accessToken, refreshToken, accessTokenInfo, refreshTokenInfo } =
-      jwtPayload;
+  async refresh(@Res() res: Response, @GetJwtPayload() jwtPayload: AuthDataTransfer) {
+    const { accessToken, refreshToken, accessTokenInfo, refreshTokenInfo } = jwtPayload;
     const { id, email } = accessTokenInfo;
     const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
       await this.authService.refresh(id, email);
@@ -77,15 +72,11 @@ export class AuthController {
     return res.status(200).json({ accessToken: newAccessToken });
   }
   @Get('logout')
-  async logout(
-    @Res() res: Response,
-    @GetJwtPayload() jwtPayload: AuthDataTransfer,
-  ) {
+  async logout(@Res() res: Response, @GetJwtPayload() jwtPayload: AuthDataTransfer) {
     res.clearCookie('refreshToken', {
       httpOnly: true,
     });
-    const { accessToken, accessTokenInfo, refreshToken, refreshTokenInfo } =
-      jwtPayload;
+    const { accessToken, accessTokenInfo, refreshToken, refreshTokenInfo } = jwtPayload;
     this.authService.addTokensToBlacklist(
       { accessToken, accessTokenExp: accessTokenInfo.exp },
       { refreshToken, refreshTokenExp: refreshTokenInfo.exp },

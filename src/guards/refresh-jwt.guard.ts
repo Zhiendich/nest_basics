@@ -5,10 +5,7 @@ import { Request } from 'express';
 import { CacheService } from 'src/services/cache.service';
 
 @Injectable()
-export class RefreshJwtGuard
-  extends AuthGuard('jwt-refresh')
-  implements CanActivate
-{
+export class RefreshJwtGuard extends AuthGuard('jwt-refresh') implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly redis: CacheService,
@@ -17,10 +14,7 @@ export class RefreshJwtGuard
   }
 
   async canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.get<boolean>(
-      'isPublic',
-      context.getHandler(),
-    );
+    const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler());
 
     if (isPublic) {
       return true;
